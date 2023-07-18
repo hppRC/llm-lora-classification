@@ -134,6 +134,7 @@ LoRAのrは「大きいモデルほど小さくできる」値だと思われる
 - [【インターンレポート】6.7B日本語モデルに対するLoRAチューニング](https://engineering.linecorp.com/ja/blog/lora-tuning-for-japanese-model)
 - [研究のためのPython開発環境](https://zenn.dev/zenizeni/books/a64578f98450c2)
 - [BERTによるテキスト分類チュートリアル](https://github.com/hppRC/bert-classification-tutorial)
+- https://github.com/llm-jp/awesome-japanese-llm
 
 ## 著者情報・引用
 
