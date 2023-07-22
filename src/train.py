@@ -24,12 +24,13 @@ class Args(Tap):
     epochs: int = 10
     num_warmup_epochs: int = 1
 
-    template_type: int = 0
+    template_type: int = 2
 
     lr: float = 5e-4
     lora_r: int = 32
     weight_decay: float = 0.01
     max_seq_len: int = 512
+    gradient_checkpointing: bool = True
 
     seed: int = 42
 
@@ -67,6 +68,7 @@ class Experiment:
             model_name=args.model_name,
             num_labels=len(args.labels),
             lora_r=args.lora_r,
+            gradient_checkpointing=args.gradient_checkpointing,
         ).eval()
         self.model.write_trainable_params()
 

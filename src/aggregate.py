@@ -14,6 +14,7 @@ class Args(Tap):
 SETTING_COLUMNS = [
     "model_name",
     "lr",
+    "batch_size",
     "lora_r",
     "template_type",
 ]
@@ -30,6 +31,7 @@ def main(args: Args):
             {
                 "model_name": config["model_name"],
                 "lr": config["lr"],
+                "batch_size": config["batch_size"],
                 "lora_r": config["lora_r"],
                 "template_type": config["template_type"],
                 "best-val-epoch": val_metrics["best-epoch"],
@@ -50,7 +52,7 @@ def main(args: Args):
     df.to_csv(str(args.output_dir / "all.csv"), index=False)
 
     best_model_df = (
-        df[df["lora_r"] == 32]
+        df[(df["lora_r"] == 32) & (df["batch_size"] == 32)]
         .groupby("model_name", as_index=False)
         .apply(lambda x: x.nlargest(1, "best-val-f1").reset_index(drop=True))
         .reset_index(drop=True)
@@ -64,7 +66,7 @@ def main(args: Args):
         )
 
     best_template_df = (
-        df[(df["lora_r"] == 32)]
+        df[(df["lora_r"] == 32) & (df["batch_size"] == 32)]
         .groupby(["model_name", "template_type"], as_index=False)
         .apply(lambda x: x.nlargest(1, "best-val-f1").reset_index(drop=True))
         .reset_index(drop=True)
@@ -78,6 +80,7 @@ def main(args: Args):
 
     best_lr_df = df[
         (df["lora_r"] == 32)
+        & (df["batch_size"] == 32)
         & (df["model_name"] == "rinna/japanese-gpt-neox-3.6b")
         & (df["template_type"] == 2)
     ].sort_values("lr", ascending=False)
@@ -89,7 +92,11 @@ def main(args: Args):
         )
 
     best_r_df = (
-        df[(df["model_name"] == "rinna/japanese-gpt-neox-3.6b") & (df["template_type"] == 2)]
+        df[
+            (df["model_name"] == "rinna/japanese-gpt-neox-3.6b")
+            & (df["template_type"] == 2)
+            & (df["batch_size"] == 32)
+        ]
         .groupby("lora_r", as_index=False)
         .apply(lambda x: x.nlargest(1, "best-val-f1").reset_index(drop=True))
         .reset_index(drop=True)
@@ -99,6 +106,23 @@ def main(args: Args):
     for row in best_r_df.to_dict("records"):
         print(
             f'|{row["lora_r"]}|{row["lr"]:e}|{row["best-val-f1"]*100:.2f}|{row["accuracy"]*100:.2f}|{row["precision"]*100:.2f}|{row["recall"]*100:.2f}|{row["f1"]*100:.2f}|'
+        )
+
+    best_batch_size_df = (
+        df[
+            ((df["lora_r"] == 32))
+            & (df["model_name"] == "rinna/japanese-gpt-neox-3.6b")
+            & (df["template_type"] == 2)
+        ]
+        .groupby("batch_size", as_index=False)
+        .apply(lambda x: x.nlargest(1, "best-val-f1").reset_index(drop=True))
+        .reset_index(drop=True)
+    ).sort_values("best-val-f1", ascending=False)
+    best_batch_size_df.to_csv(str(args.output_dir / "r.csv"), index=False)
+    print("-" * 80)
+    for row in best_batch_size_df.to_dict("records"):
+        print(
+            f'|{row["batch_size"]}|{row["lr"]:e}|{row["best-val-f1"]*100:.2f}|{row["accuracy"]*100:.2f}|{row["precision"]*100:.2f}|{row["recall"]*100:.2f}|{row["f1"]*100:.2f}|'
         )
 
 
